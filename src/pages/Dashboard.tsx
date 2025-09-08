@@ -1,87 +1,65 @@
-import React, { useEffect, useState } from "react";
-import { db } from "../services/firebase";
-import { collection, addDoc, deleteDoc, doc, getDocs, orderBy, query, serverTimestamp } from "firebase/firestore";
 
-interface Article {
-  id: string;
-  title: string;
-  content: string;
-  image?: string;
-  createdAt: any;
-}
+// src/pages/Dashboard.tsx
+import { useState, useEffect } from "react";
+import { collection, addDoc, deleteDoc, doc, getDocs, serverTimestamp } from "firebase/firestore";
+import { db } from "../firebaseConfig";
 
-const Dashboard: React.FC = () => {
+export default function Dashboard() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [image, setImage] = useState("");
-  const [articles, setArticles] = useState<Article[]>([]);
+  const [posts, setPosts] = useState<any[]>([]);
 
-  async function fetchArticles() {
-    const q = query(collection(db, "articles"), orderBy("createdAt", "desc"));
-    const snapshot = await getDocs(q);
-    const list: Article[] = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    })) as Article[];
-    setArticles(list);
-  }
+  const fetchPosts = async () => {
+    const querySnapshot = await getDocs(collection(db, "posts"));
+    setPosts(querySnapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+  };
 
   useEffect(() => {
-    fetchArticles();
+    fetchPosts();
   }, []);
 
-  const addArticle = async () => {
+  const handleAdd = async () => {
     if (!title || !content) return;
-    await addDoc(collection(db, "articles"), {
+    await addDoc(collection(db, "posts"), {
       title,
       content,
-      image: image || null,
-      createdAt: serverTimestamp(),
+      createdAt: new Date().toLocaleString()
     });
     setTitle("");
     setContent("");
-    setImage("");
-    fetchArticles();
+    fetchPosts();
   };
 
-  const deleteArticle = async (id: string) => {
-    await deleteDoc(doc(db, "articles", id));
-    fetchArticles();
+  const handleDelete = async (id: string) => {
+    await deleteDoc(doc(db, "posts", id));
+    fetchPosts();
   };
 
   return (
-    <div>
+    <div className="container">
       <h1>لوحة التحكم</h1>
-      <div>
-        <input
-          type="text"
-          placeholder="عنوان المقال"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-        <textarea
-          placeholder="المحتوى"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="رابط الصورة (اختياري)"
-          value={image}
-          onChange={(e) => setImage(e.target.value)}
-        />
-        <button onClick={addArticle}>إضافة مقال</button>
-      </div>
+      <input
+        type="text"
+        placeholder="العنوان"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
+      <textarea
+        placeholder="المقال"
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
+      />
+      <button onClick={handleAdd}>إضافة مقال</button>
 
-      <h2>جميع المقالات</h2>
-      {articles.map((article) => (
-        <div key={article.id}>
-          <h3>{article.title}</h3>
-          <button onClick={() => deleteArticle(article.id)}>حذف</button>
-        </div>
-      ))}
+      <h2>المقالات الحالية</h2>
+      <ul>
+        {posts.map(post => (
+          <li key={post.id}>
+            <strong>{post.title}</strong>
+            <button onClick={() => handleDelete(post.id)}>حذف</button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
-};
-
-export default Dashboard;
+}

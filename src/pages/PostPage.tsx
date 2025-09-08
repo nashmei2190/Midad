@@ -1,42 +1,33 @@
-import React, { useEffect, useState } from "react";
+
+// src/pages/PostPage.tsx
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { db } from "../services/firebase";
 import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebaseConfig";
 
-interface Article {
-  id: string;
-  title: string;
-  content: string;
-  image?: string;
-  createdAt: any;
-}
-
-const PostPage: React.FC = () => {
-  const { slug } = useParams<{ slug: string }>();
-  const [article, setArticle] = useState<Article | null>(null);
+export default function PostPage() {
+  const { id } = useParams<{ id: string }>();
+  const [post, setPost] = useState<any>(null);
 
   useEffect(() => {
-    async function fetchArticle() {
-      if (slug) {
-        const ref = doc(db, "articles", slug);
-        const snap = await getDoc(ref);
-        if (snap.exists()) {
-          setArticle({ id: snap.id, ...snap.data() } as Article);
-        }
+    const fetchPost = async () => {
+      if (!id) return;
+      const docRef = doc(db, "posts", id);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        setPost(docSnap.data());
       }
-    }
-    fetchArticle();
-  }, [slug]);
+    };
+    fetchPost();
+  }, [id]);
 
-  if (!article) return <p>جاري التحميل...</p>;
+  if (!post) return <p>جاري التحميل...</p>;
 
   return (
-    <div>
-      <h1>{article.title}</h1>
-      {article.image && <img src={article.image} alt={article.title} style={{ maxWidth: "400px" }} />}
-      <p>{article.content}</p>
+    <div className="container">
+      <h1>{post.title}</h1>
+      <p>{post.content}</p>
+      <small>{post.createdAt}</small>
     </div>
   );
-};
-
-export default PostPage;
+}
