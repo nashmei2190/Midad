@@ -1,47 +1,27 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { getSiteStats, getRealtimeVisitors } from "../services/analytics";
 
-export default function Dashboard() {
-  const [todayVisitors, setTodayVisitors] = useState("...");
-  const [totalVisitors, setTotalVisitors] = useState("...");
-
-  async function fetchVisitors() {
-    const MEASUREMENT_ID = import.meta.env.VITE_MEASUREMENT_ID;
-    const API_SECRET = import.meta.env.VITE_API_SECRET;
-
-    // اليوم
-    const todayRes = await fetch(`https://analyticsdata.googleapis.com/v1beta/properties/12130850783:runReport`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        dateRanges: [{ startDate: "today", endDate: "today" }],
-        metrics: [{ name: "activeUsers" }],
-      }),
-    });
-    const todayData = await todayRes.json();
-    setTodayVisitors(todayData.rows?.[0]?.metricValues?.[0]?.value || "0");
-
-    // الإجمالي
-    const totalRes = await fetch(`https://analyticsdata.googleapis.com/v1beta/properties/12130850783:runReport`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        dateRanges: [{ startDate: "2020-01-01", endDate: "today" }],
-        metrics: [{ name: "activeUsers" }],
-      }),
-    });
-    const totalData = await totalRes.json();
-    setTotalVisitors(totalData.rows?.[0]?.metricValues?.[0]?.value || "0");
-  }
+const Dashboard: React.FC = () => {
+  const [siteStats, setSiteStats] = useState("0");
+  const [realtime, setRealtime] = useState("0");
 
   useEffect(() => {
-    fetchVisitors();
+    async function fetchData() {
+      const stats = await getSiteStats();
+      const real = await getRealtimeVisitors();
+      setSiteStats(stats);
+      setRealtime(real);
+    }
+    fetchData();
   }, []);
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div>
       <h1>لوحة التحكم</h1>
-      <h2>👥 زوار اليوم: {todayVisitors}</h2>
-      <h2>🌍 إجمالي الزوار: {totalVisitors}</h2>
+      <p>عدد الزيارات آخر 30 يوم: {siteStats}</p>
+      <p>عدد الزوار الآن: {realtime}</p>
     </div>
   );
-}
+};
+
+export default Dashboard;

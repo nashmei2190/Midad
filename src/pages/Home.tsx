@@ -1,35 +1,23 @@
-import { useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { getRealtimeVisitors } from "../services/analytics";
 
-function sendHomeView() {
-  const MEASUREMENT_ID = import.meta.env.VITE_MEASUREMENT_ID;
-  const API_SECRET = import.meta.env.VITE_API_SECRET;
+const Home: React.FC = () => {
+  const [visitors, setVisitors] = useState("0");
 
-  fetch(`https://www.google-analytics.com/mp/collect?measurement_id=${MEASUREMENT_ID}&api_secret=${API_SECRET}`, {
-    method: "POST",
-    body: JSON.stringify({
-      client_id: String(Date.now()),
-      events: [
-        {
-          name: "page_view",
-          params: {
-            page_title: "الرئيسية",
-            page_location: window.location.href,
-            page_path: "/",
-          },
-        },
-      ],
-    }),
-  });
-}
-
-export default function Home() {
   useEffect(() => {
-    sendHomeView();
+    async function fetchData() {
+      const v = await getRealtimeVisitors();
+      setVisitors(v);
+    }
+    fetchData();
   }, []);
 
   return (
     <div>
-      <h1>مرحباً بك في مداد ✨</h1>
+      <h1>الصفحة الرئيسية</h1>
+      <p>عدد الزوار الآن: {visitors}</p>
     </div>
   );
-}
+};
+
+export default Home;
