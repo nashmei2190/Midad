@@ -2,7 +2,7 @@
 // src/pages/PostPage.tsx
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 
 export default function PostPage() {
@@ -10,15 +10,14 @@ export default function PostPage() {
   const [post, setPost] = useState<any>(null);
 
   useEffect(() => {
-    const fetchPost = async () => {
-      if (!id) return;
-      const docRef = doc(db, "posts", id);
-      const docSnap = await getDoc(docRef);
+    if (!id) return;
+    const docRef = doc(db, "Posts", id);
+    const unsubscribe = onSnapshot(docRef, (docSnap) => {
       if (docSnap.exists()) {
         setPost(docSnap.data());
       }
-    };
-    fetchPost();
+    });
+    return () => unsubscribe();
   }, [id]);
 
   if (!post) return <p>جاري التحميل...</p>;

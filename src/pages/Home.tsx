@@ -1,7 +1,7 @@
 
 // src/pages/Home.tsx
 import { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { Link } from "react-router-dom";
 
@@ -16,15 +16,14 @@ export default function Home() {
   const [posts, setPosts] = useState<Post[]>([]);
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      const querySnapshot = await getDocs(collection(db, "posts"));
-      const data = querySnapshot.docs.map(doc => ({
+    const unsubscribe = onSnapshot(collection(db, "Posts"), (snapshot) => {
+      const data = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       })) as Post[];
       setPosts(data);
-    };
-    fetchPosts();
+    });
+    return () => unsubscribe();
   }, []);
 
   return (
