@@ -1,17 +1,13 @@
-import { BetaAnalyticsDataClient } from "@google-analytics/data";
-
-const analyticsDataClient = new BetaAnalyticsDataClient({
-  keyFilename: "config/credentials.json",
-});
-
-const PROPERTY_ID = "12130850783";
-
-export async function getTodayVisitors() {
-  const [response] = await analyticsDataClient.runReport({
-    property: `properties/${PROPERTY_ID}`,
-    dateRanges: [{ startDate: "today", endDate: "today" }],
-    metrics: [{ name: "activeUsers" }],
+// خدمات Google Analytics API (Frontend بديل مبسط)
+export async function getVisitors(startDate: string, endDate: string) {
+  const response = await fetch(`https://analyticsdata.googleapis.com/v1beta/properties/12130850783:runReport`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      dateRanges: [{ startDate, endDate }],
+      metrics: [{ name: "activeUsers" }],
+    }),
   });
-
-  return response.rows?.[0]?.metricValues?.[0]?.value || "0";
+  const data = await response.json();
+  return data.rows?.[0]?.metricValues?.[0]?.value || "0";
 }
