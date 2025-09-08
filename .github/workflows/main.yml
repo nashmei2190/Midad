@@ -1,4 +1,0 @@
-git pull origin main
-git add .
-git commit -m "setup: add SEO, analytics, sitemap, robots, ads placeholder, fonts"
-git push origin main
