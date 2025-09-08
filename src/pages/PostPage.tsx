@@ -4,6 +4,30 @@ import { Calendar, Eye, Clock, Tag, Share2, Facebook, Twitter } from 'lucide-rea
 import { useArticles } from '../hooks/useArticles';
 import AdSpace from '../components/AdSpace';
 
+
+// 🔹 Google Analytics Page View Sender
+function sendPageView(slug: string) {
+  const MEASUREMENT_ID = import.meta.env.VITE_MEASUREMENT_ID;
+  const API_SECRET = import.meta.env.VITE_API_SECRET;
+
+  fetch(`https://www.google-analytics.com/mp/collect?measurement_id=${MEASUREMENT_ID}&api_secret=${API_SECRET}`, {
+    method: "POST",
+    body: JSON.stringify({
+      client_id: String(Date.now()),
+      events: [
+        {
+          name: "page_view",
+          params: {
+            page_title: document.title,
+            page_location: window.location.href,
+            page_path: "/article/" + slug,
+          },
+        },
+      ],
+    }),
+  });
+}
+
 const PostPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const { getArticleBySlug, incrementViews, articles } = useArticles();
@@ -11,6 +35,7 @@ const PostPage = () => {
   const article = slug ? getArticleBySlug(slug) : null;
 
   useEffect(() => {
+    if(article) sendPageView(article.id);
     if (article) {
       incrementViews(article.id);
     }
