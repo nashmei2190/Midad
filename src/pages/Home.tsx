@@ -1,21 +1,42 @@
 import React, { useEffect, useState } from "react";
-import { getRealtimeVisitors } from "../services/analytics";
+import { db } from "../services/firebase";
+import { collection, getDocs, orderBy, query } from "firebase/firestore";
+import { Link } from "react-router-dom";
+
+interface Article {
+  id: string;
+  title: string;
+  content: string;
+  image?: string;
+  createdAt: any;
+}
 
 const Home: React.FC = () => {
-  const [visitors, setVisitors] = useState("0");
+  const [articles, setArticles] = useState<Article[]>([]);
 
   useEffect(() => {
-    async function fetchData() {
-      const v = await getRealtimeVisitors();
-      setVisitors(v);
+    async function fetchArticles() {
+      const q = query(collection(db, "articles"), orderBy("createdAt", "desc"));
+      const snapshot = await getDocs(q);
+      const list: Article[] = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Article[];
+      setArticles(list);
     }
-    fetchData();
+    fetchArticles();
   }, []);
 
   return (
     <div>
       <h1>الصفحة الرئيسية</h1>
-      <p>عدد الزوار الآن: {visitors}</p>
+      {articles.map((article) => (
+        <div key={article.id}>
+          <h2><Link to={`/post/${article.id}`}>{article.title}</Link></h2>
+          {article.image && <img src={article.image} alt={article.title} style={{ maxWidth: "200px" }} />}
+          <p>{article.content.substring(0, 100)}...</p>
+        </div>
+      ))}
     </div>
   );
 };

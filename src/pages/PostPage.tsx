@@ -1,25 +1,40 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { getPostViews } from "../services/analytics";
+import { db } from "../services/firebase";
+import { doc, getDoc } from "firebase/firestore";
+
+interface Article {
+  id: string;
+  title: string;
+  content: string;
+  image?: string;
+  createdAt: any;
+}
 
 const PostPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
-  const [views, setViews] = useState("0");
+  const [article, setArticle] = useState<Article | null>(null);
 
   useEffect(() => {
-    async function fetchData() {
+    async function fetchArticle() {
       if (slug) {
-        const v = await getPostViews(slug);
-        setViews(v);
+        const ref = doc(db, "articles", slug);
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+          setArticle({ id: snap.id, ...snap.data() } as Article);
+        }
       }
     }
-    fetchData();
+    fetchArticle();
   }, [slug]);
+
+  if (!article) return <p>جاري التحميل...</p>;
 
   return (
     <div>
-      <h1>المقال: {slug}</h1>
-      <p>عدد المشاهدات: {views}</p>
+      <h1>{article.title}</h1>
+      {article.image && <img src={article.image} alt={article.title} style={{ maxWidth: "400px" }} />}
+      <p>{article.content}</p>
     </div>
   );
 };
