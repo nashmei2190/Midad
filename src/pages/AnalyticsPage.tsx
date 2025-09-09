@@ -6,18 +6,23 @@ const AnalyticsPage = () => {
   const { articles } = useArticles();
 
   // Calculate analytics data
+  const totalViews = articles.reduce((sum, article) => sum + article.views, 0);
   const avgReadingTime = Math.round(
     articles.reduce((sum, article) => sum + article.readingTime, 0) / articles.length || 0
   );
   
   const topArticles = articles
+    .sort((a, b) => b.views - a.views)
     .slice(0, 5);
 
   const categoryStats = ['تقنية', 'صحة', 'رياضة', 'ترفيه', 'ثقافة'].map(category => {
     const categoryArticles = articles.filter(article => article.category === category);
+    const categoryViews = categoryArticles.reduce((sum, article) => sum + article.views, 0);
     return {
       category,
       count: categoryArticles.length,
+      views: categoryViews,
+      percentage: totalViews > 0 ? Math.round((categoryViews / totalViews) * 100) : 0
     };
   });
 
@@ -94,7 +99,9 @@ const AnalyticsPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {totalViews.toLocaleString()}
                 </p>
+                <p className="text-gray-600 dark:text-gray-300 text-sm">إجمالي المشاهدات</p>
               </div>
               <div className="bg-purple-100 dark:bg-purple-900 p-3 rounded-lg">
                 <Eye className="h-6 w-6 text-purple-600 dark:text-purple-400" />
@@ -148,6 +155,7 @@ const AnalyticsPage = () => {
                     <div className="flex items-center gap-4 mt-1 text-sm text-gray-600 dark:text-gray-400">
                       <span className="flex items-center gap-1">
                         <Eye className="h-3 w-3" />
+                        {article.views.toLocaleString()}
                       </span>
                       <span>{article.category}</span>
                     </div>
@@ -174,6 +182,7 @@ const AnalyticsPage = () => {
                       {stat.category}
                     </span>
                     <span className="text-sm text-gray-600 dark:text-gray-400">
+                      {stat.count} مقال - {stat.views.toLocaleString()} مشاهدة
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
@@ -279,6 +288,7 @@ const AnalyticsPage = () => {
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-white rounded-full" />
+                <span>تتبع المشاهدات الفعلية</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-white rounded-full" />

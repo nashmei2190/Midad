@@ -1,61 +1,47 @@
-
-// src/pages/Dashboard.tsx
-import { useState, useEffect } from "react";
-import { collection, addDoc, deleteDoc, doc, onSnapshot } from "firebase/firestore";
-import { db } from "../firebaseConfig";
+import { useEffect, useState } from "react";
 
 export default function Dashboard() {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [posts, setPosts] = useState<any[]>([]);
+  const [todayVisitors, setTodayVisitors] = useState("...");
+  const [totalVisitors, setTotalVisitors] = useState("...");
+
+  async function fetchVisitors() {
+    const MEASUREMENT_ID = import.meta.env.VITE_MEASUREMENT_ID;
+    const API_SECRET = import.meta.env.VITE_API_SECRET;
+
+    // اليوم
+    const todayRes = await fetch(`https://analyticsdata.googleapis.com/v1beta/properties/12130850783:runReport`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        dateRanges: [{ startDate: "today", endDate: "today" }],
+        metrics: [{ name: "activeUsers" }],
+      }),
+    });
+    const todayData = await todayRes.json();
+    setTodayVisitors(todayData.rows?.[0]?.metricValues?.[0]?.value || "0");
+
+    // الإجمالي
+    const totalRes = await fetch(`https://analyticsdata.googleapis.com/v1beta/properties/12130850783:runReport`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        dateRanges: [{ startDate: "2020-01-01", endDate: "today" }],
+        metrics: [{ name: "activeUsers" }],
+      }),
+    });
+    const totalData = await totalRes.json();
+    setTotalVisitors(totalData.rows?.[0]?.metricValues?.[0]?.value || "0");
+  }
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, "Posts"), (snapshot) => {
-      setPosts(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
-    return () => unsubscribe();
+    fetchVisitors();
   }, []);
 
-  const handleAdd = async () => {
-    if (!title || !content) return;
-    await addDoc(collection(db, "Posts"), {
-      title,
-      content,
-      createdAt: new Date().toLocaleString()
-    });
-    setTitle("");
-    setContent("");
-  };
-
-  const handleDelete = async (id: string) => {
-    await deleteDoc(doc(db, "Posts", id));
-  };
-
   return (
-    <div className="container">
+    <div style={{ padding: "20px" }}>
       <h1>لوحة التحكم</h1>
-      <input
-        type="text"
-        placeholder="العنوان"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-      />
-      <textarea
-        placeholder="المقال"
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-      />
-      <button onClick={handleAdd}>إضافة مقال</button>
-
-      <h2>المقالات الحالية</h2>
-      <ul>
-        {posts.map(post => (
-          <li key={post.id}>
-            <strong>{post.title}</strong>
-            <button onClick={() => handleDelete(post.id)}>حذف</button>
-          </li>
-        ))}
-      </ul>
+      <h2>👥 زوار اليوم: {todayVisitors}</h2>
+      <h2>🌍 إجمالي الزوار: {totalVisitors}</h2>
     </div>
   );
 }

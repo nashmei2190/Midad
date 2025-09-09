@@ -12,6 +12,7 @@ import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
+import AdminPage from './pages/AdminPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/privacy" element={<PrivacyPage />} />
                 <Route path="/terms" element={<TermsPage />} />
+                <Route path="/admin" element={<AdminPage />} />
                 <Route path="/analytics" element={<AnalyticsPage />} />
               </Routes>
             </main>

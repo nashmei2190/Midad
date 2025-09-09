@@ -9,6 +9,7 @@ export interface Article {
   author: string;
   publishedAt: Date;
   isFeatured: boolean;
+  views: number;
   readingTime: number;
   slug: string;
 }
@@ -20,6 +21,7 @@ export interface Analytics {
   topArticles: Array<{
     id: string;
     title: string;
+    views: number;
   }>;
   trafficSources: Array<{
     source: string;

@@ -57,9 +57,11 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article, variant = 'default' 
                 </div>
                 <div className="flex items-center gap-1">
                   <Eye className="h-4 w-4" />
+                  <span>{article.views.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Clock className="h-4 w-4" />
+                  <span>{article.readingTime} دقائق</span>
                 </div>
               </div>
               <span className="text-amber-400">{article.author}</span>
@@ -97,6 +99,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article, variant = 'default' 
             <div className="flex items-center gap-3 text-xs text-gray-500">
               <span className="flex items-center gap-1">
                 <Eye className="h-3 w-3" />
+                {article.views}
               </span>
               <span className="flex items-center gap-1">
                 <Clock className="h-3 w-3" />
@@ -144,9 +147,11 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article, variant = 'default' 
               </span>
               <span className="flex items-center gap-1">
                 <Eye className="h-4 w-4" />
+                {article.views.toLocaleString()}
               </span>
               <span className="flex items-center gap-1">
                 <Clock className="h-4 w-4" />
+                {article.readingTime} دقائق
               </span>
             </div>
           </div>
