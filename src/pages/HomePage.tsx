@@ -19,8 +19,6 @@ const HomePage = () => {
     .slice(0, 6);
 
   const featuredArticles = articles
-    .filter(article => article.views > 100)
-    .sort((a, b) => b.views - a.views)
     .slice(0, 4);
 
   return (
