@@ -4,11 +4,9 @@ import { useArticles } from '../hooks/useArticles';
 
 const PostPage: React.FC = () => {
   const { slug } = useParams();
-  const { getArticleBySlug, incrementViews } = useArticles();
   const article = slug ? getArticleBySlug(slug) : undefined;
 
   useEffect(() => {
-    if (article) incrementViews(article.id);
   }, [article]);
 
   if (!article) {

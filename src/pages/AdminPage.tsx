@@ -3,7 +3,6 @@ import { Shield, Plus, Edit3, Trash2, Star, Save } from 'lucide-react';
 import { useArticles } from '../hooks/useArticles';
 import { Article } from '../types/Article';
 
-const AdminPage = () => {
   const { articles, addArticle, updateArticle, deleteArticle, setFeaturedArticle } = useArticles();
   const [isAuthenticated, setIsAuthenticated] = useState(true); // لا يوجد تسجيل دخول للزوار
   const [showForm, setShowForm] = useState(false);
@@ -30,11 +29,9 @@ const AdminPage = () => {
       featuredImage: formData.featuredImage,
       category: formData.category as any,
       tags: (formData.tags || '').split(',').map(t => t.trim()).filter(Boolean),
-      author: 'Admin',
       isFeatured: !!formData.isFeatured,
       readingTime: Math.max(1, Math.ceil(formData.content.split(/\s+/).length / 200)),
       slug: formData.title.toLowerCase().replace(/[^\u0621-\u064Aa-z0-9\s-]/g,'').trim().replace(/\s+/g,'-')
-    } as Omit<Article, 'id' | 'publishedAt' | 'views'>;
 
     if (editingArticle) {
       await updateArticle(editingArticle.id, payload as Partial<Article>);
@@ -131,4 +128,3 @@ const AdminPage = () => {
   );
 };
 
-export default AdminPage;

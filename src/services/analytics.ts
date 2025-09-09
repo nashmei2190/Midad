@@ -30,12 +30,10 @@ export async function getRealtimeVisitors() {
   return res.data.rows?.[0]?.metricValues?.[0]?.value || "0";
 }
 
-export async function getPostViews(slug: string) {
   const res = await analyticsDataClient.properties.runReport({
     property: `properties/${PROPERTY_ID}`,
     requestBody: {
       dimensions: [{ name: "pagePath" }],
-      metrics: [{ name: "screenPageViews" }],
       dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
       dimensionFilter: {
         filter: {
@@ -52,7 +50,6 @@ export async function getSiteStats() {
   const res = await analyticsDataClient.properties.runReport({
     property: `properties/${PROPERTY_ID}`,
     requestBody: {
-      metrics: [{ name: "screenPageViews" }],
       dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
     },
   });

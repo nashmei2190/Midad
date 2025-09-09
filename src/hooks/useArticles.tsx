@@ -18,12 +18,10 @@ import {
 interface ArticlesContextType {
   articles: Article[];
   featuredArticle: Article | null;
-  addArticle: (article: Omit<Article, 'id' | 'publishedAt' | 'views'>) => Promise<void>;
   updateArticle: (id: string, updates: Partial<Article>) => Promise<void>;
   deleteArticle: (id: string) => Promise<void>;
   setFeaturedArticle: (id: string) => Promise<void>;
   getArticleBySlug: (slug: string) => Article | undefined;
-  incrementViews: (id: string) => Promise<void>;
 }
 
 const ArticlesContext = createContext<ArticlesContextType | undefined>(undefined);
@@ -53,12 +51,10 @@ export const ArticlesProvider = ({ children }: { children: ReactNode }) => {
           featuredImage: data.featuredImage ?? '',
           category: data.category ?? 'تقنية',
           tags: data.tags ?? [],
-          author: data.author ?? 'Admin',
           publishedAt: (data.publishedAt && data.publishedAt.toDate)
             ? data.publishedAt.toDate()
             : (data.publishedAt ? new Date(data.publishedAt) : new Date()),
           isFeatured: !!data.isFeatured,
-          views: data.views ?? 0,
           readingTime: data.readingTime ?? Math.max(1, Math.ceil((data.content ?? '').split(/\s+/).length / 200)),
           slug: data.slug ?? slugify(data.title ?? '')
         } as Article;
@@ -70,11 +66,9 @@ export const ArticlesProvider = ({ children }: { children: ReactNode }) => {
     return () => unsub();
   }, []);
 
-  const addArticle = async (article: Omit<Article, 'id' | 'publishedAt' | 'views'>) => {
     const newDoc = {
       ...article,
       slug: article.slug || slugify(article.title),
-      views: 0,
       publishedAt: serverTimestamp()
     };
     await addDoc(collection(db, 'Posts'), newDoc);
@@ -101,9 +95,7 @@ export const ArticlesProvider = ({ children }: { children: ReactNode }) => {
     return articles.find(a => a.slug === slug);
   };
 
-  const incrementViews = async (id: string) => {
     try {
-      await updateDoc(doc(db, 'Posts', id), { views: increment(1) } as any);
     } catch {}
   };
 
@@ -116,7 +108,6 @@ export const ArticlesProvider = ({ children }: { children: ReactNode }) => {
       deleteArticle,
       setFeaturedArticle,
       getArticleBySlug,
-      incrementViews
     }}>
       {children}
     </ArticlesContext.Provider>
