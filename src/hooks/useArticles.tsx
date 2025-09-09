@@ -1,4 +1,3 @@
-// src/hooks/useArticles.tsx
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { Article } from '../types/Article';
 import { db } from '../firebaseConfig';
@@ -11,13 +10,13 @@ import {
   onSnapshot,
   query,
   orderBy,
-  increment,
   serverTimestamp
 } from 'firebase/firestore';
 
 interface ArticlesContextType {
   articles: Article[];
   featuredArticle: Article | null;
+  addArticle: (article: Omit<Article, 'id' | 'publishedAt'>) => Promise<void>;
   updateArticle: (id: string, updates: Partial<Article>) => Promise<void>;
   deleteArticle: (id: string) => Promise<void>;
   setFeaturedArticle: (id: string) => Promise<void>;
@@ -48,9 +47,10 @@ export const ArticlesProvider = ({ children }: { children: ReactNode }) => {
           title: data.title ?? '',
           content: data.content ?? '',
           excerpt: data.excerpt ?? '',
-          featuredImage: data.featuredImage ?? '',
+          featuredImage: data.featuredImage ?? 'https://images.pexels.com/photos/261763/pexels-photo-261763.jpeg?auto=compress&cs=tinysrgb&w=800',
           category: data.category ?? 'تقنية',
           tags: data.tags ?? [],
+          author: data.author ?? 'فريق مِداد',
           publishedAt: (data.publishedAt && data.publishedAt.toDate)
             ? data.publishedAt.toDate()
             : (data.publishedAt ? new Date(data.publishedAt) : new Date()),
@@ -66,6 +66,7 @@ export const ArticlesProvider = ({ children }: { children: ReactNode }) => {
     return () => unsub();
   }, []);
 
+  const addArticle = async (article: Omit<Article, 'id' | 'publishedAt'>) => {
     const newDoc = {
       ...article,
       slug: article.slug || slugify(article.title),
@@ -87,16 +88,20 @@ export const ArticlesProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const setFeaturedArticle = async (id: string) => {
-    setFeatured(articles.find(a => a.id === id) || null);
+    // First, remove featured status from all articles
+    const batch = articles.map(async (article) => {
+      if (article.isFeatured) {
+        await updateDoc(doc(db, 'Posts', article.id), { isFeatured: false } as any);
+      }
+    });
+    await Promise.all(batch);
+    
+    // Then set the new featured article
     await updateDoc(doc(db, 'Posts', id), { isFeatured: true } as any);
   };
 
   const getArticleBySlug = (slug: string) => {
     return articles.find(a => a.slug === slug);
-  };
-
-    try {
-    } catch {}
   };
 
   return (
